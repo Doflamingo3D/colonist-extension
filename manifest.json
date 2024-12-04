@@ -12,7 +12,7 @@
         "activeTab",
         "scripting",
         "storage"
-    ],
+    },
     "host_permissions": [
         "https://colonist.io/*"
     ],
@@ -22,8 +22,6 @@
             "css": ["styles.css"],
             "js": ["explorer.js"]
         }
-    ],
-    "background": {
-        "service_worker": "background.js"
-    }
+    ]
 }
+
