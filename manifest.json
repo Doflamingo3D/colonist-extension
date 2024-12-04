@@ -1,23 +1,29 @@
 {
     "name": "Colonassist",
     "short_name": "Colonassist",
-    "manifest_version": 2,
+    "manifest_version": 3,
     "author": "Elijah Adams",
-    "description": "Track resources and other statistics in colonist.io",
-    "version": "0.0.1",
+    "description": "Track resources and other statistics in Colonist.io",
+    "version": "0.1.0",
     "icons": {
         "64": "icon64.png"
     },
     "permissions": [
-        "https://colonist.io/*",
-        "https://hexs.io/*"
+        "activeTab",
+        "scripting",
+        "storage"
+    ],
+    "host_permissions": [
+        "https://colonist.io/*"
     ],
     "content_scripts": [
         {
-          "matches": ["https://colonist.io/*", "https://hexs.io/*"],
-          "css": ["styles.css"],
-          "run_at": "document_idle",
-          "js": ["explorer.js"]
+            "matches": ["https://colonist.io/*"],
+            "css": ["styles.css"],
+            "js": ["explorer.js"]
         }
-      ]
+    ],
+    "background": {
+        "service_worker": "background.js"
+    }
 }
