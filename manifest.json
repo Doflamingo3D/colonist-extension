@@ -12,7 +12,7 @@
         "activeTab",
         "scripting",
         "storage"
-    },
+    ],
     "host_permissions": [
         "https://colonist.io/*"
     ],
@@ -24,4 +24,3 @@
         }
     ]
 }
-
