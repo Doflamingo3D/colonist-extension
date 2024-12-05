@@ -83,6 +83,7 @@ function updatePlayerResources(player, resources) {
     renderResourceTable(); // Update the resource table
 }
 
+// Render the resource table
 function renderResourceTable() {
     // Remove existing table if it exists
     const existingTable = document.getElementById("resource-table");
@@ -108,41 +109,6 @@ function renderResourceTable() {
         const row = table.insertRow();
         const playerNameCell = row.insertCell();
         playerNameCell.innerText = player;
-        Object.keys(resourceTypes).forEach((resource) => {
-            const cell = row.insertCell();
-            cell.innerText = playerResources[player][resource] || 0;
-        });
-    });
-
-    // Append the table to the document body
-    document.body.appendChild(table);
-}
-
-    }
-
-    // Create a new table
-    const table = document.createElement("table");
-    table.id = "resource-table";
-    table.style.position = "absolute";
-    table.style.top = "10px";
-    table.style.right = "10px";
-    table.style.backgroundColor = "#fff";
-    table.style.border = "1px solid #ccc";
-    table.style.padding = "10px";
-    table.style.zIndex = 9999;
-
-    // Header row
-    const headerRow = table.insertRow();
-    headerRow.insertCell().innerText = "Player";
-    Object.keys(resourceTypes).forEach((resource) => {
-        const cell = headerRow.insertCell();
-        cell.innerText = resource.charAt(0).toUpperCase() + resource.slice(1);
-    });
-
-    // Player rows
-    Object.keys(playerResources).forEach((player) => {
-        const row = table.insertRow();
-        row.insertCell().innerText = player;
         Object.keys(resourceTypes).forEach((resource) => {
             const cell = row.insertCell();
             cell.innerText = playerResources[player][resource] || 0;
