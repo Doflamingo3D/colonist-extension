@@ -1,72 +1,33 @@
-@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
-
-* {
-    font-family: 'Roboto', sans-serif;
-}
-
-
-#explorer-tbl {
+/* Resource Table Styling */
+#resource-table {
     position: absolute;
-    background-color: #1d1d1d;
-    z-index: 9999;
     top: 10px;
-    left: 10px;
-    padding: 3px;
-    border: none;
+    right: 10px;
+    background-color: #333; /* Dark background */
+    color: #fff; /* White text */
+    border: 1px solid #ccc; /* Light border */
+    padding: 10px;
+    z-index: 9999; /* Ensure it stays on top */
+    border-collapse: collapse; /* Remove gaps between cells */
+    font-family: Arial, sans-serif; /* Clean font */
+    font-size: 14px; /* Readable font size */
 }
 
-.explorer-tbl-header {
-    border: none;
-
+#resource-table th, #resource-table td {
+    padding: 8px; /* Padding for cells */
+    text-align: center; /* Center text in cells */
+    border: 1px solid #555; /* Inner cell borders */
 }
 
-.explorer-tbl-header .explorer-tbl-cell {
-    padding: 4px 7px 2px; /* default override cell padding */
+#resource-table th {
+    background-color: #555; /* Slightly lighter background for headers */
+    color: #fff; /* White text for headers */
 }
 
-.explorer-tbl-row {
-    border: none;
-    height: 3em;
+#resource-table tr:nth-child(even) {
+    background-color: #444; /* Alternate row background for even rows */
 }
 
-.explorer-tbl-row:nth-child(2n-1) { background-color: rgb(36, 36, 36); }
-.explorer-tbl-row:nth-child(2n) { background-color: #1d1d1d; }
-
-.explorer-tbl-cell {
-    border: none;
-    box-sizing: unset;
-    padding: 0 2px;
-    text-align: center;
-    line-height: 3em;
-    vertical-align: top;
-}
-
-.explorer-tbl-player-col-cell {
-    border: none;
-    display: inline-flex;
-    padding: 0;
-    line-height: 3em;
-}
-
-.explorer-tbl-player-col-cell-color {
-    width: 6px;
-    background-color: #000;
-    display: inline-block;
-}
-
-.explorer-tbl-player-name {
-    margin: 0px 10px 0 4px;
-}
-
-.explorer-tbl-player-col-header {
-    font-weight: 600;
-    text-transform: uppercase;
-    border: none;
-    padding-left: 10px; /* width of cell-color + margin-left of player-name */
-    font-size: 85%;
-}
-
-.explorer-tbl-resource-icon {
-    width: 24px;
-    height: 36px;
+#resource-table tr:nth-child(odd) {
+    background-color: #333; /* Alternate row background for odd rows */
 }
