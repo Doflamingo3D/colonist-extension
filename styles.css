@@ -5,18 +5,19 @@
     right: 10px;
     background-color: #333; /* Dark background */
     color: #fff;
-    border: 1px solid #ccc;
+    border: 1px solid #777; /* Subtle border color */
     padding: 10px;
     z-index: 9999; /* Ensure it stays on top */
     border-collapse: collapse;
     font-family: Arial, sans-serif;
     font-size: 14px;
-    cursor: grab; /* Indicates draggable header */
+    cursor: grab; /* Indicates draggable table */
 }
 
 #resource-table th {
     background-color: #555;
     cursor: grab; /* Show grab cursor on header for dragging */
+    color: #fff; /* White text for headers */
 }
 
 #resource-table th, #resource-table td {
@@ -25,15 +26,20 @@
     border: 1px solid #555; /* Inner cell borders */
 }
 
-#resource-table th {
-    background-color: #555; /* Slightly lighter background for headers */
-    color: #fff; /* White text for headers */
-}
-
 #resource-table tr:nth-child(even) {
     background-color: #444; /* Alternate row background for even rows */
 }
 
 #resource-table tr:nth-child(odd) {
     background-color: #333; /* Alternate row background for odd rows */
+}
+
+#resource-table tr:hover {
+    background-color: #666; /* Highlighted row color on hover */
+}
+
+#resource-table caption {
+    font-weight: bold;
+    color: #fff;
+    margin-bottom: 10px;
 }
