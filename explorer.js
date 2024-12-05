@@ -74,43 +74,51 @@ function parseLogMessage(messageElement) {
         const resources = extractResources(messageElement);
         updatePlayerResources(player, resources);
     }
+     // Place this code for trade handling here
+    if (textContent.includes("gave") && textContent.includes("and got") && textContent.includes("from")) {
+        handleTrade(messageElement); // Detect and process trades
+    }
 }
 
 // Handle trading
 function handleTrade(messageElement) {
-    const textContent = messageElement.textContent.trim();
-    console.log("Handling trade:", textContent);
+    console.log("Handling trade:", messageElement);
 
-    // Extract Player A and Player B
-    const [playerAPart, playerBPart] = textContent.split(" and got ");
-    const playerAName = playerAPart.split(" gave ")[0].trim();
-    const playerBName = playerBPart.split(" from ")[1].trim();
+    // Extract giver player
+    const giverElement = messageElement.querySelector(".semibold");
+    const giverPlayer = giverElement ? giverElement.textContent.trim() : null;
 
-    // Extract resources Player A gave and Player B gave
-    const playerAGave = extractResourcesFromText(playerAPart.split(" gave ")[1]);
-    const playerBGave = extractResourcesFromText(playerBPart.split(" from ")[0]);
+    // Extract resources given
+    const givenResources = extractResourcesFromIcons(
+        messageElement.querySelectorAll("img[alt='ore'], img[alt='grain'], img[alt='wood'], img[alt='brick'], img[alt='sheep']")
+    );
 
-    // Update Player A's resources
-    updatePlayerResources(playerAName, negateResources(playerAGave)); // Deduct resources given by Player A
-    updatePlayerResources(playerAName, playerBGave); // Add resources given by Player B
+    // Extract receiver player
+    const receiverElement = messageElement.querySelectorAll(".semibold")[1]; // Second .semibold for the receiver
+    const receiverPlayer = receiverElement ? receiverElement.textContent.trim() : null;
 
-    // Update Player B's resources
-    updatePlayerResources(playerBName, negateResources(playerBGave)); // Deduct resources given by Player B
-    updatePlayerResources(playerBName, playerAGave); // Add resources given by Player A
+    // Extract resources received
+    const receivedResources = extractResourcesFromIcons(
+        messageElement.querySelectorAll("img[alt='grain'], img[alt='ore'], img[alt='wood'], img[alt='brick'], img[alt='sheep']")
+    );
 
-    console.log(`Trade processed: ${playerAName} gave ${JSON.stringify(playerAGave)} and got ${JSON.stringify(playerBGave)} from ${playerBName}`);
+    if (!giverPlayer || !receiverPlayer) {
+        console.error("Failed to extract player names from trade message");
+        return;
+    }
+
+    // Update resources for giver and receiver
+    updatePlayerResources(giverPlayer, negateResources(givenResources)); // Deduct resources given
+    updatePlayerResources(giverPlayer, receivedResources); // Add resources received
+    updatePlayerResources(receiverPlayer, negateResources(receivedResources)); // Deduct resources given
+    updatePlayerResources(receiverPlayer, givenResources); // Add resources received
+
+    console.log(`Trade processed: ${giverPlayer} gave ${JSON.stringify(givenResources)} and got ${JSON.stringify(receivedResources)} from ${receiverPlayer}`);
 }
 
-// Extract player name from message
-function extractPlayerName(messageElement) {
-    const playerNameElement = messageElement.querySelector(".semibold");
-    return playerNameElement ? playerNameElement.textContent.trim() : null;
-}
-
-// Extract resources from a log message
-function extractResources(messageElement) {
+// Extract resources from icons
+function extractResourcesFromIcons(resourceIcons) {
     const resources = {};
-    const resourceIcons = messageElement.querySelectorAll("img");
     resourceIcons.forEach((img) => {
         Object.keys(resourceTypes).forEach((resource) => {
             if (img.src.includes(resourceTypes[resource])) {
@@ -120,6 +128,7 @@ function extractResources(messageElement) {
     });
     return resources;
 }
+
 
 // Extract resources from text
 function extractResourcesFromText(resourceText) {
