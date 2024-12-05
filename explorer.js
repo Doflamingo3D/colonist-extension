@@ -3,6 +3,19 @@ console.log("Colonassist started...");
 let playerResources = {}; // Stores resource counts for each player
 let tablePosition = { top: "10px", left: "10px" }; // Default position
 
+function extractResources(messageElement) {
+    const resources = {};
+    const resourceIcons = messageElement.querySelectorAll("img");
+    resourceIcons.forEach((img) => {
+        Object.keys(resourceTypes).forEach((resource) => {
+            if (img.src.includes(resourceTypes[resource])) {
+                resources[resource] = (resources[resource] || 0) + 1;
+            }
+        });
+    });
+    return resources;
+}
+
 // Resource types to track
 const resourceTypes = {
     wood: "card_lumber",
@@ -45,6 +58,11 @@ function extractPlayerName(messageElement) {
     return playerNameElement ? playerNameElement.textContent.trim() : null;
 }
 
+function extractPlayerNameFromText(messagePart, keyword) {
+    const playerPart = messagePart.split(keyword)[0].trim();
+    return playerPart ? playerPart.split(" ")[0].trim() : null;
+}
+
 // Step 2: Initialize all players from the start of the game
 function initializePlayers(logElement) {
     console.log("Initializing players...");
@@ -83,31 +101,45 @@ function parseLogMessage(messageElement) {
     }
 
     // Handle trading
-    else if (textContent.includes("gave") && textContent.includes("and got") && textContent.includes("from")) {
-        handleTrade(messageElement); // Detect and process trades
-    }
+   else if (textContent.includes("gave") && textContent.includes("and got") && textContent.includes("from")) {
+    handleTrade(messageElement); // Process trade messages
+}
+
 }
 
 // Handle trading
 function handleTrade(messageElement) {
     console.log("Handling trade:", messageElement);
 
-    const messageParts = messageElement.textContent.split(" and got ");
-    if (messageParts.length !== 2) {
-        console.error("Trade message format invalid:", messageElement.textContent);
+    // Extract trade message text
+    const messageText = messageElement.textContent.trim();
+
+    // Split message into "gave" and "got" parts
+    const [gavePart, gotPart] = messageText.split("and got").map(part => part.trim());
+
+    if (!gavePart || !gotPart) {
+        console.error("Trade message format invalid:", messageText);
         return;
     }
 
-    const [giverPart, receiverPart] = messageParts;
-    const [giverPlayer, givenResources] = extractTradeDetails(giverPart, "gave");
-    const [receiverPlayer, receivedResources] = extractTradeDetails(receiverPart, "from");
+    // Extract giver and receiver players
+    const giverPlayer = extractPlayerNameFromText(gavePart, "gave");
+    const receiverPlayer = extractPlayerNameFromText(gotPart, "from");
 
     if (!giverPlayer || !receiverPlayer) {
         console.error("Failed to extract player names from trade message");
         return;
     }
 
-    // Update resources for giver and receiver
+    // Extract resources given and received
+    const givenResources = extractResourcesFromIcons(
+        Array.from(messageElement.querySelectorAll("img")).slice(0, gavePart.split(" ").length)
+    );
+    const receivedResources = extractResourcesFromIcons(
+        Array.from(messageElement.querySelectorAll("img")).slice(gavePart.split(" ").length)
+    );
+
+    // Update resources for both players
     updatePlayerResources(giverPlayer, negateResources(givenResources)); // Deduct resources given
     updatePlayerResources(giverPlayer, receivedResources); // Add resources received
     updatePlayerResources(receiverPlayer, negateResources(receivedResources)); // Deduct resources given
