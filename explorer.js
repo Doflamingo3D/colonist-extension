@@ -3,9 +3,17 @@ console.log("Colonassist started...");
 let playerResources = {}; // Stores resource counts for each player
 let tablePosition = { top: "10px", left: "10px" }; // Default position
 
-function extractResources(messageElement) {
+// Resource types to track
+const resourceTypes = {
+    wood: "card_lumber",
+    brick: "card_brick",
+    wheat: "card_grain",
+    sheep: "card_wool",
+    stone: "card_ore"
+};
+
+function extractResourcesFromIcons(resourceIcons) {
     const resources = {};
-    const resourceIcons = messageElement.querySelectorAll("img");
     resourceIcons.forEach((img) => {
         Object.keys(resourceTypes).forEach((resource) => {
             if (img.src.includes(resourceTypes[resource])) {
@@ -15,15 +23,6 @@ function extractResources(messageElement) {
     });
     return resources;
 }
-
-// Resource types to track
-const resourceTypes = {
-    wood: "card_lumber",
-    brick: "card_brick",
-    wheat: "card_grain",
-    sheep: "card_wool",
-    stone: "card_ore"
-};
 
 // Step 1: Observe game log and start tracking players and resources
 function observeGameLog() {
@@ -111,46 +110,34 @@ function parseLogMessage(messageElement) {
 function handleTrade(messageElement) {
     console.log("Handling trade:", messageElement);
 
-    // Check if the current message contains "gave" and "and got"
-    if (messageElement.textContent.includes("gave") && messageElement.textContent.includes("and got")) {
-        // Capture the first part of the message
-        const giverPart = messageElement.textContent.trim();
-        console.log("Giver Part:", giverPart);
+    // Extract player names
+    const giverElement = messageElement.querySelector(".semibold:first-of-type");
+    const receiverElement = messageElement.querySelector(".semibold:last-of-type");
 
-        // Get the next sibling element (assumes the second part is in the next <div>)
-        const nextMessageElement = messageElement.nextElementSibling;
-        if (!nextMessageElement) {
-            console.error("No next message element found for trade!");
-            return;
-        }
+    const giverPlayer = giverElement ? giverElement.textContent.trim() : null;
+    const receiverPlayer = receiverElement ? receiverElement.textContent.trim() : null;
 
-        // Capture the second part of the message
-        const receiverPart = nextMessageElement.textContent.trim();
-        console.log("Receiver Part:", receiverPart);
-
-        // Combine both parts into a single string
-        const fullTradeMessage = `${giverPart} ${receiverPart}`;
-        console.log("Full Trade Message:", fullTradeMessage);
-
-        // Extract players and resources from the combined message
-        const [giverPlayer, givenResources] = extractTradeDetails(fullTradeMessage, "gave");
-        const [receiverPlayer, receivedResources] = extractTradeDetails(fullTradeMessage, "from");
-
-        if (!giverPlayer || !receiverPlayer) {
-            console.error("Failed to extract player names from trade message");
-            return;
-        }
-
-        // Update resources for both players
-        updatePlayerResources(giverPlayer, negateResources(givenResources)); // Deduct resources given
-        updatePlayerResources(giverPlayer, receivedResources); // Add resources received
-        updatePlayerResources(receiverPlayer, negateResources(receivedResources)); // Deduct resources given
-        updatePlayerResources(receiverPlayer, givenResources); // Add resources received
-
-        console.log(`Trade processed: ${giverPlayer} gave ${JSON.stringify(givenResources)} and got ${JSON.stringify(receivedResources)} from ${receiverPlayer}`);
-    } else {
-        console.log("Message does not contain a trade action.");
+    if (!giverPlayer || !receiverPlayer) {
+        console.error("Failed to extract player names from trade message");
+        return;
     }
+
+    // Extract all resource icons in the trade message
+    const resourceIcons = Array.from(messageElement.querySelectorAll("img.lobby-chat-text-icon"));
+
+    // Separate given and received resources based on text structure
+    const givenResources = extractResourcesFromIcons(resourceIcons.slice(0, Math.floor(resourceIcons.length / 2)));
+    const receivedResources = extractResourcesFromIcons(resourceIcons.slice(Math.floor(resourceIcons.length / 2)));
+
+    // Update resources for giver and receiver
+    updatePlayerResources(giverPlayer, negateResources(givenResources)); // Deduct resources given
+    updatePlayerResources(giverPlayer, receivedResources); // Add resources received
+    updatePlayerResources(receiverPlayer, negateResources(receivedResources)); // Deduct resources received
+    updatePlayerResources(receiverPlayer, givenResources); // Add resources given
+
+    console.log(
+        `Trade processed: ${giverPlayer} gave ${JSON.stringify(givenResources)} and got ${JSON.stringify(receivedResources)} from ${receiverPlayer}`
+    );
 }
 
 // Extract trade details
