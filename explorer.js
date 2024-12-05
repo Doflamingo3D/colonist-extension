@@ -118,7 +118,7 @@ function renderResourceTable() {
 
     // Create a new table
     const table = document.createElement("table");
-    table.id = "resource-table"; // This ID matches the CSS styling
+    table.id = "resource-table";
 
     // Create header row
     const headerRow = table.insertRow();
@@ -139,6 +139,43 @@ function renderResourceTable() {
             cell.innerText = playerResources[player][resource] || 0;
         });
     });
+
+    // Add drag functionality
+    makeTableDraggable(table);
+
+    document.body.appendChild(table); // Add table to the page
+}
+
+// Function to make the table draggable
+function makeTableDraggable(table) {
+    let offsetX = 0;
+    let offsetY = 0;
+    let isDragging = false;
+
+    // Add mousedown event to start dragging
+    table.addEventListener("mousedown", (e) => {
+        isDragging = true;
+        offsetX = e.clientX - table.getBoundingClientRect().left;
+        offsetY = e.clientY - table.getBoundingClientRect().top;
+        table.style.cursor = "grabbing"; // Change cursor during dragging
+    });
+
+    // Add mousemove event to drag the table
+    document.addEventListener("mousemove", (e) => {
+        if (isDragging) {
+            table.style.left = `${e.clientX - offsetX}px`;
+            table.style.top = `${e.clientY - offsetY}px`;
+        }
+    });
+
+    // Add mouseup event to stop dragging
+    document.addEventListener("mouseup", () => {
+        if (isDragging) {
+            isDragging = false;
+            table.style.cursor = "grab"; // Reset cursor after dragging
+        }
+    });
+}
 
     document.body.appendChild(table); // Add table to the page
 }
