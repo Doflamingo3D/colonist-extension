@@ -1,16 +1,22 @@
 /* Resource Table Styling */
 #resource-table {
-    position: absolute;
+    position: absolute; /* Required for dragging */
     top: 10px;
     right: 10px;
     background-color: #333; /* Dark background */
-    color: #fff; /* White text */
-    border: 1px solid #ccc; /* Light border */
+    color: #fff;
+    border: 1px solid #ccc;
     padding: 10px;
     z-index: 9999; /* Ensure it stays on top */
-    border-collapse: collapse; /* Remove gaps between cells */
-    font-family: Arial, sans-serif; /* Clean font */
-    font-size: 14px; /* Readable font size */
+    border-collapse: collapse;
+    font-family: Arial, sans-serif;
+    font-size: 14px;
+    cursor: grab; /* Indicates draggable header */
+}
+
+#resource-table th {
+    background-color: #555;
+    cursor: grab; /* Show grab cursor on header for dragging */
 }
 
 #resource-table th, #resource-table td {
