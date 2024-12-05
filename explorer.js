@@ -111,46 +111,46 @@ function parseLogMessage(messageElement) {
 function handleTrade(messageElement) {
     console.log("Handling trade:", messageElement);
 
-    // Extract trade message text
-    const messageText = messageElement.textContent.trim();
+    // Check if the current message contains "gave" and "and got"
+    if (messageElement.textContent.includes("gave") && messageElement.textContent.includes("and got")) {
+        // Capture the first part of the message
+        const giverPart = messageElement.textContent.trim();
+        console.log("Giver Part:", giverPart);
 
-    // Split message into "gave" and "got" parts
-    const [gavePart, gotPart] = messageText.split("and got").map(part => part.trim());
+        // Get the next sibling element (assumes the second part is in the next <div>)
+        const nextMessageElement = messageElement.nextElementSibling;
+        if (!nextMessageElement) {
+            console.error("No next message element found for trade!");
+            return;
+        }
 
-    if (!gavePart || !gotPart) {
-        console.error("Trade message format invalid:", messageText);
-        return;
+        // Capture the second part of the message
+        const receiverPart = nextMessageElement.textContent.trim();
+        console.log("Receiver Part:", receiverPart);
+
+        // Combine both parts into a single string
+        const fullTradeMessage = `${giverPart} ${receiverPart}`;
+        console.log("Full Trade Message:", fullTradeMessage);
+
+        // Extract players and resources from the combined message
+        const [giverPlayer, givenResources] = extractTradeDetails(fullTradeMessage, "gave");
+        const [receiverPlayer, receivedResources] = extractTradeDetails(fullTradeMessage, "from");
+
+        if (!giverPlayer || !receiverPlayer) {
+            console.error("Failed to extract player names from trade message");
+            return;
+        }
+
+        // Update resources for both players
+        updatePlayerResources(giverPlayer, negateResources(givenResources)); // Deduct resources given
+        updatePlayerResources(giverPlayer, receivedResources); // Add resources received
+        updatePlayerResources(receiverPlayer, negateResources(receivedResources)); // Deduct resources given
+        updatePlayerResources(receiverPlayer, givenResources); // Add resources received
+
+        console.log(`Trade processed: ${giverPlayer} gave ${JSON.stringify(givenResources)} and got ${JSON.stringify(receivedResources)} from ${receiverPlayer}`);
+    } else {
+        console.log("Message does not contain a trade action.");
     }
-
-    // Extract giver and receiver players
-    const giverPlayer = extractPlayerNameFromText(gavePart, "gave");
-    const receiverPlayer = extractPlayerNameFromText(gotPart, "from");
-
-    if (!giverPlayer || !receiverPlayer) {
-        console.error("Failed to extract player names from trade message");
-        return;
-    }
-
-    console.log(`Giver: ${giverPlayer}, Receiver: ${receiverPlayer}`);
-
-    // Extract all resource icons from the message
-    const resourceIcons = Array.from(messageElement.querySelectorAll("img"));
-    console.log("Resource Icons Detected:", resourceIcons); // Add this line here
-
-    // Split resources into given and received
-    const givenResources = extractResourcesFromIcons(resourceIcons.slice(0, resourceIcons.length / 2));
-    const receivedResources = extractResourcesFromIcons(resourceIcons.slice(resourceIcons.length / 2));
-
-    console.log(`Given Resources: ${JSON.stringify(givenResources)}`);
-    console.log(`Received Resources: ${JSON.stringify(receivedResources)}`);
-
-    // Update resources for both players
-    updatePlayerResources(giverPlayer, negateResources(givenResources)); // Deduct resources given
-    updatePlayerResources(giverPlayer, receivedResources); // Add resources received
-    updatePlayerResources(receiverPlayer, negateResources(receivedResources)); // Deduct resources given
-    updatePlayerResources(receiverPlayer, givenResources); // Add resources received
-
-    console.log(`Trade processed: ${giverPlayer} gave ${JSON.stringify(givenResources)} and got ${JSON.stringify(receivedResources)} from ${receiverPlayer}`);
 }
 
 // Extract trade details
