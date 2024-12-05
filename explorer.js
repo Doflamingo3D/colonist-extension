@@ -131,13 +131,18 @@ function handleTrade(messageElement) {
         return;
     }
 
-    // Extract resources given and received
-    const givenResources = extractResourcesFromIcons(
-        Array.from(messageElement.querySelectorAll("img")).slice(0, gavePart.split(" ").length)
-    );
-    const receivedResources = extractResourcesFromIcons(
-        Array.from(messageElement.querySelectorAll("img")).slice(gavePart.split(" ").length)
-    );
+    console.log(`Giver: ${giverPlayer}, Receiver: ${receiverPlayer}`);
+
+    // Extract all resource icons from the message
+    const resourceIcons = Array.from(messageElement.querySelectorAll("img"));
+    console.log("Resource Icons Detected:", resourceIcons); // Add this line here
+
+    // Split resources into given and received
+    const givenResources = extractResourcesFromIcons(resourceIcons.slice(0, resourceIcons.length / 2));
+    const receivedResources = extractResourcesFromIcons(resourceIcons.slice(resourceIcons.length / 2));
+
+    console.log(`Given Resources: ${JSON.stringify(givenResources)}`);
+    console.log(`Received Resources: ${JSON.stringify(receivedResources)}`);
 
     // Update resources for both players
     updatePlayerResources(giverPlayer, negateResources(givenResources)); // Deduct resources given
