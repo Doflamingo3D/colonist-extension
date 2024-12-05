@@ -1,6 +1,7 @@
 console.log("Colonassist started...");
 
 let playerResources = {}; // Stores resource counts for each player
+let tablePosition = { top: "10px", left: "10px" }; // Default position
 
 // Resource types to track
 const resourceTypes = {
@@ -120,6 +121,11 @@ function renderResourceTable() {
     const table = document.createElement("table");
     table.id = "resource-table";
 
+    // Apply the saved position
+    table.style.position = "absolute";
+    table.style.left = tablePosition.left;
+    table.style.top = tablePosition.top;
+
     // Create header row
     const headerRow = table.insertRow();
     const headerPlayer = headerRow.insertCell();
@@ -163,8 +169,15 @@ function makeTableDraggable(table) {
     // Add mousemove event to drag the table
     document.addEventListener("mousemove", (e) => {
         if (isDragging) {
-            table.style.left = `${e.clientX - offsetX}px`;
-            table.style.top = `${e.clientY - offsetY}px`;
+            const newLeft = `${e.clientX - offsetX}px`;
+            const newTop = `${e.clientY - offsetY}px`;
+
+            table.style.left = newLeft;
+            table.style.top = newTop;
+
+            // Update the saved position
+            tablePosition.left = newLeft;
+            tablePosition.top = newTop;
         }
     });
 
