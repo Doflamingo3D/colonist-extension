@@ -39,6 +39,12 @@ function observeGameLog() {
     logObserver.observe(logElement, { childList: true });
 }
 
+// Extract player name from message
+function extractPlayerName(messageElement) {
+    const playerNameElement = messageElement.querySelector(".semibold");
+    return playerNameElement ? playerNameElement.textContent.trim() : null;
+}
+
 // Step 2: Initialize all players from the start of the game
 function initializePlayers(logElement) {
     console.log("Initializing players...");
@@ -80,31 +86,21 @@ function parseLogMessage(messageElement) {
     else if (textContent.includes("gave") && textContent.includes("and got") && textContent.includes("from")) {
         handleTrade(messageElement); // Detect and process trades
     }
-
-    // Add other conditions as needed
 }
 
 // Handle trading
 function handleTrade(messageElement) {
     console.log("Handling trade:", messageElement);
 
-    // Extract giver player
-    const giverElement = messageElement.querySelector(".semibold");
-    const giverPlayer = giverElement ? giverElement.textContent.trim() : null;
+    const messageParts = messageElement.textContent.split(" and got ");
+    if (messageParts.length !== 2) {
+        console.error("Trade message format invalid:", messageElement.textContent);
+        return;
+    }
 
-    // Extract resources given
-    const givenResources = extractResourcesFromIcons(
-        messageElement.querySelectorAll("img[alt='ore'], img[alt='grain'], img[alt='wood'], img[alt='brick'], img[alt='sheep']")
-    );
-
-    // Extract receiver player
-    const receiverElement = messageElement.querySelectorAll(".semibold")[1]; // Second .semibold for the receiver
-    const receiverPlayer = receiverElement ? receiverElement.textContent.trim() : null;
-
-    // Extract resources received
-    const receivedResources = extractResourcesFromIcons(
-        messageElement.querySelectorAll("img[alt='grain'], img[alt='ore'], img[alt='wood'], img[alt='brick'], img[alt='sheep']")
-    );
+    const [giverPart, receiverPart] = messageParts;
+    const [giverPlayer, givenResources] = extractTradeDetails(giverPart, "gave");
+    const [receiverPlayer, receivedResources] = extractTradeDetails(receiverPart, "from");
 
     if (!giverPlayer || !receiverPlayer) {
         console.error("Failed to extract player names from trade message");
@@ -120,6 +116,13 @@ function handleTrade(messageElement) {
     console.log(`Trade processed: ${giverPlayer} gave ${JSON.stringify(givenResources)} and got ${JSON.stringify(receivedResources)} from ${receiverPlayer}`);
 }
 
+// Extract trade details
+function extractTradeDetails(messagePart, keyword) {
+    const [player, resourcesText] = messagePart.split(keyword).map(part => part.trim());
+    const resources = extractResourcesFromIcons(messagePart);
+    return [player, resources];
+}
+
 // Extract resources from icons
 function extractResourcesFromIcons(resourceIcons) {
     const resources = {};
@@ -129,21 +132,6 @@ function extractResourcesFromIcons(resourceIcons) {
                 resources[resource] = (resources[resource] || 0) + 1;
             }
         });
-    });
-    return resources;
-}
-
-
-// Extract resources from text
-function extractResourcesFromText(resourceText) {
-    const resources = {};
-    const resourceParts = resourceText.split(", ");
-    resourceParts.forEach((part) => {
-        const [count, resource] = part.split(" ");
-        const resourceKey = Object.keys(resourceTypes).find((key) => resource.includes(key));
-        if (resourceKey) {
-            resources[resourceKey] = parseInt(count);
-        }
     });
     return resources;
 }
