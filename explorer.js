@@ -96,6 +96,8 @@ function parseLogMessage(messageElement) {
 
 // Handle trading
 function handleTrade(messageElement) {
+    const textContent = messageElement.textContent.trim();
+
     // Extract player names
     const giverElement = messageElement.querySelector(".semibold:first-of-type");
     const receiverElement = messageElement.querySelector(".semibold:last-of-type");
@@ -110,21 +112,43 @@ function handleTrade(messageElement) {
 
     // Extract all resource icons in the trade message
     const resourceIcons = Array.from(messageElement.querySelectorAll("img.lobby-chat-text-icon"));
-    const middleIndex = Math.floor(resourceIcons.length / 2);
 
-    // Separate resources into given and received
-    const givenResources = extractResourcesFromIcons(resourceIcons.slice(0, middleIndex));
-    const receivedResources = extractResourcesFromIcons(resourceIcons.slice(middleIndex));
+    // Check if the message contains "gave"
+    if (textContent.includes("gave") && textContent.includes("and got")) {
+        console.log(`Trade detected: ${textContent}`);
 
-    // Update resources for the giver and receiver
-    updatePlayerResources(giverPlayer, negateResources(givenResources)); // Deduct given resources
-    updatePlayerResources(giverPlayer, receivedResources); // Add received resources
-    updatePlayerResources(receiverPlayer, negateResources(receivedResources)); // Deduct received resources
-    updatePlayerResources(receiverPlayer, givenResources); // Add given resources
+        // Split resources into given and received
+        const middleIndex = Math.floor(resourceIcons.length / 2);
+        const givenResources = extractResourcesFromIcons(resourceIcons.slice(0, middleIndex));
+        const receivedResources = extractResourcesFromIcons(resourceIcons.slice(middleIndex));
 
-    console.log(
-        `Trade processed: ${giverPlayer} gave ${JSON.stringify(givenResources)} and got ${JSON.stringify(receivedResources)} from ${receiverPlayer}`
-    );
+        // Update resources
+        updatePlayerResources(giverPlayer, negateResources(givenResources)); // Deduct given resources
+        updatePlayerResources(receiverPlayer, givenResources); // Add given resources
+        updatePlayerResources(giverPlayer, receivedResources); // Add received resources
+        updatePlayerResources(receiverPlayer, negateResources(receivedResources)); // Deduct received resources
+
+        console.log(
+            `${giverPlayer} gave ${JSON.stringify(givenResources)} and got ${JSON.stringify(receivedResources)} from ${receiverPlayer}`
+        );
+    }
+
+    // Check if the message contains "got (Resource) from"
+    if (textContent.includes("got") && textContent.includes("from")) {
+        console.log(`Received trade detected: ${textContent}`);
+
+        // Treat all resources as received in this case
+        const receivedResources = extractResourcesFromIcons(resourceIcons);
+
+        // Update resources for both players
+        updatePlayerResources(giverPlayer, receivedResources); // Add received resources for giver
+        updatePlayerResources(receiverPlayer, receivedResources); // Add received resources for receiver
+
+        console.log(
+            `${giverPlayer} got ${JSON.stringify(receivedResources)} from ${receiverPlayer}`
+        );
+    }
+}
 }
 
 // Negate resource counts
