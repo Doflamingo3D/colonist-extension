@@ -9,9 +9,10 @@ const resourceTypes = {
     brick: "card_brick",
     wheat: "card_grain",
     sheep: "card_wool",
-    stone: "card_ore"
+    stone: "card_ore",
 };
 
+// Function to extract resources from icons
 function extractResourcesFromIcons(resourceIcons) {
     const resources = {};
     resourceIcons.forEach((img) => {
@@ -34,15 +35,13 @@ function observeGameLog() {
     }
 
     console.log("Game log found. Setting up observer...");
-
-    // Initialize all players when the game starts
     initializePlayers(logElement);
 
     const logObserver = new MutationObserver((mutations) => {
         mutations.forEach((mutation) => {
             mutation.addedNodes.forEach((node) => {
                 if (node.nodeType === Node.ELEMENT_NODE && node.classList.contains("message-post")) {
-                    parseLogMessage(node); // Parse new log entries
+                    parseLogMessage(node);
                 }
             });
         });
@@ -51,23 +50,18 @@ function observeGameLog() {
     logObserver.observe(logElement, { childList: true });
 }
 
-// Extract player name from message
+// Extract player name
 function extractPlayerName(messageElement) {
     const playerNameElement = messageElement.querySelector(".semibold");
     return playerNameElement ? playerNameElement.textContent.trim() : null;
 }
 
-function extractPlayerNameFromText(messagePart, keyword) {
-    const playerPart = messagePart.split(keyword)[0].trim();
-    return playerPart ? playerPart.split(" ")[0].trim() : null;
-}
-
-// Step 2: Initialize all players from the start of the game
+// Step 2: Initialize all players
 function initializePlayers(logElement) {
     console.log("Initializing players...");
-
-    const playerMessages = Array.from(logElement.querySelectorAll(".message-post"))
-        .filter((message) => message.textContent.includes("placed a")); // Detect placement messages
+    const playerMessages = Array.from(logElement.querySelectorAll(".message-post")).filter((message) =>
+        message.textContent.includes("placed a")
+    );
 
     playerMessages.forEach((message) => {
         const playerName = extractPlayerName(message);
@@ -77,40 +71,31 @@ function initializePlayers(logElement) {
     });
 
     console.log("Initialized players:", playerResources);
-    renderResourceTable(); // Display the initial table
+    renderResourceTable();
 }
 
-// Parse a single log message
+// Parse log messages
 function parseLogMessage(messageElement) {
     const textContent = messageElement.textContent.trim();
     console.log("Parsing message:", textContent);
 
-    // Handle starting resources
     if (textContent.includes("received starting resources")) {
         const player = extractPlayerName(messageElement);
-        const resources = extractResources(messageElement);
+        const resources = extractResourcesFromIcons(messageElement.querySelectorAll("img"));
         updatePlayerResources(player, resources);
-    }
-
-    // Handle resource gains from dice rolls
-    else if (textContent.includes("got")) {
+    } else if (textContent.includes("got")) {
         const player = extractPlayerName(messageElement);
-        const resources = extractResources(messageElement);
+        const resources = extractResourcesFromIcons(messageElement.querySelectorAll("img"));
         updatePlayerResources(player, resources);
+    } else if (textContent.includes("gave") && textContent.includes("and got") && textContent.includes("from")) {
+        handleTrade(messageElement);
     }
-
-    // Handle trading
-   else if (textContent.includes("gave") && textContent.includes("and got") && textContent.includes("from")) {
-    handleTrade(messageElement); // Process trade messages
-}
-
 }
 
 // Handle trading
 function handleTrade(messageElement) {
     console.log("Handling trade:", messageElement);
 
-    // Extract player names
     const giverElement = messageElement.querySelector(".semibold:first-of-type");
     const receiverElement = messageElement.querySelector(".semibold:last-of-type");
 
@@ -122,42 +107,18 @@ function handleTrade(messageElement) {
         return;
     }
 
-    // Extract all resource icons in the trade message
     const resourceIcons = Array.from(messageElement.querySelectorAll("img.lobby-chat-text-icon"));
-
-    // Separate given and received resources based on text structure
     const givenResources = extractResourcesFromIcons(resourceIcons.slice(0, Math.floor(resourceIcons.length / 2)));
     const receivedResources = extractResourcesFromIcons(resourceIcons.slice(Math.floor(resourceIcons.length / 2)));
 
-    // Update resources for giver and receiver
-    updatePlayerResources(giverPlayer, negateResources(givenResources)); // Deduct resources given
-    updatePlayerResources(giverPlayer, receivedResources); // Add resources received
-    updatePlayerResources(receiverPlayer, negateResources(receivedResources)); // Deduct resources received
-    updatePlayerResources(receiverPlayer, givenResources); // Add resources given
+    updatePlayerResources(giverPlayer, negateResources(givenResources));
+    updatePlayerResources(giverPlayer, receivedResources);
+    updatePlayerResources(receiverPlayer, negateResources(receivedResources));
+    updatePlayerResources(receiverPlayer, givenResources);
 
     console.log(
         `Trade processed: ${giverPlayer} gave ${JSON.stringify(givenResources)} and got ${JSON.stringify(receivedResources)} from ${receiverPlayer}`
     );
-}
-
-// Extract trade details
-function extractTradeDetails(messagePart, keyword) {
-    const [player, resourcesText] = messagePart.split(keyword).map(part => part.trim());
-    const resources = extractResourcesFromIcons(messagePart);
-    return [player, resources];
-}
-
-// Extract resources from icons
-function extractResourcesFromIcons(resourceIcons) {
-    const resources = {};
-    resourceIcons.forEach((img) => {
-        Object.keys(resourceTypes).forEach((resource) => {
-            if (img.src.includes(resourceTypes[resource])) {
-                resources[resource] = (resources[resource] || 0) + 1;
-            }
-        });
-    });
-    return resources;
 }
 
 // Negate resource counts
@@ -169,7 +130,7 @@ function negateResources(resources) {
     return negated;
 }
 
-// Update resource data for a player
+// Update player resources
 function updatePlayerResources(player, resources) {
     if (!player) return;
     if (!playerResources[player]) {
@@ -179,86 +140,63 @@ function updatePlayerResources(player, resources) {
         playerResources[player][resource] += resources[resource];
     });
     console.log(`Updated resources for ${player}:`, playerResources[player]);
-    renderResourceTable(); // Update the resource table
+    renderResourceTable();
 }
 
-// Render the resource table
+// Render resource table
 function renderResourceTable() {
-    // Remove existing table if it exists
     const existingTable = document.getElementById("resource-table");
-    if (existingTable) {
-        existingTable.remove();
-    }
+    if (existingTable) existingTable.remove();
 
-    // Create a new table
     const table = document.createElement("table");
     table.id = "resource-table";
-
-    // Apply the saved position
     table.style.position = "absolute";
     table.style.left = tablePosition.left;
     table.style.top = tablePosition.top;
 
-    // Create header row
     const headerRow = table.insertRow();
-    const headerPlayer = headerRow.insertCell();
-    headerPlayer.innerText = "Player";
+    headerRow.insertCell().innerText = "Player";
     Object.keys(resourceTypes).forEach((resource) => {
         const cell = headerRow.insertCell();
         cell.innerText = resource.charAt(0).toUpperCase() + resource.slice(1);
     });
 
-    // Create rows for each player
     Object.keys(playerResources).forEach((player) => {
         const row = table.insertRow();
-        const playerNameCell = row.insertCell();
-        playerNameCell.innerText = player;
+        row.insertCell().innerText = player;
         Object.keys(resourceTypes).forEach((resource) => {
-            const cell = row.insertCell();
-            cell.innerText = playerResources[player][resource] || 0;
+            row.insertCell().innerText = playerResources[player][resource] || 0;
         });
     });
 
-    // Add drag functionality
     makeTableDraggable(table);
-
-    document.body.appendChild(table); // Add table to the page
+    document.body.appendChild(table);
 }
 
-// Function to make the table draggable
+// Make table draggable
 function makeTableDraggable(table) {
-    let offsetX = 0;
-    let offsetY = 0;
-    let isDragging = false;
+    let offsetX = 0, offsetY = 0, isDragging = false;
 
-    // Add mousedown event to start dragging
     table.addEventListener("mousedown", (e) => {
         isDragging = true;
         offsetX = e.clientX - table.getBoundingClientRect().left;
         offsetY = e.clientY - table.getBoundingClientRect().top;
-        table.style.cursor = "grabbing"; // Change cursor during dragging
+        table.style.cursor = "grabbing";
     });
 
-    // Add mousemove event to drag the table
     document.addEventListener("mousemove", (e) => {
         if (isDragging) {
-            const newLeft = `${e.clientX - offsetX}px`;
-            const newTop = `${e.clientY - offsetY}px`;
-
-            table.style.left = newLeft;
-            table.style.top = newTop;
-
-            // Update the saved position
-            tablePosition.left = newLeft;
-            tablePosition.top = newTop;
+            table.style.left = `${e.clientX - offsetX}px`;
+            table.style.top = `${e.clientY - offsetY}px`;
+            tablePosition.left = `${e.clientX - offsetX}px`;
+            tablePosition.top = `${e.clientY - offsetY}px`;
         }
     });
 
-    // Add mouseup event to stop dragging
     document.addEventListener("mouseup", () => {
         if (isDragging) {
             isDragging = false;
-            table.style.cursor = "grab"; // Reset cursor after dragging
+            table.style.cursor = "grab";
         }
     });
 }
