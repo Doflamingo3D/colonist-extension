@@ -67,17 +67,21 @@ function parseLogMessage(messageElement) {
         const player = extractPlayerName(messageElement);
         const resources = extractResources(messageElement);
         updatePlayerResources(player, resources);
-    } else if (textContent.includes("got") && textContent.includes("gave") && textContent.includes("from")) {
-        handleTrade(messageElement); // Detect and process trades
-    } else if (textContent.includes("got")) { // Handle resource gains from dice rolls
+    }
+
+    // Handle resource gains from dice rolls
+    else if (textContent.includes("got")) {
         const player = extractPlayerName(messageElement);
         const resources = extractResources(messageElement);
         updatePlayerResources(player, resources);
     }
-     // Place this code for trade handling here
-    if (textContent.includes("gave") && textContent.includes("and got") && textContent.includes("from")) {
+
+    // Handle trading
+    else if (textContent.includes("gave") && textContent.includes("and got") && textContent.includes("from")) {
         handleTrade(messageElement); // Detect and process trades
     }
+
+    // Add other conditions as needed
 }
 
 // Handle trading
