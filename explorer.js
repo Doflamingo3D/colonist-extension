@@ -94,32 +94,49 @@ function parseLogMessage(messageElement) {
 
 // Handle trading
 function handleTrade(messageElement) {
-    console.log("Handling trade:", messageElement);
+    console.log("Trade message element:", messageElement.outerHTML); // Log the full message element
 
+    // Extract player names
     const giverElement = messageElement.querySelector(".semibold:first-of-type");
     const receiverElement = messageElement.querySelector(".semibold:last-of-type");
 
     const giverPlayer = giverElement ? giverElement.textContent.trim() : null;
     const receiverPlayer = receiverElement ? receiverElement.textContent.trim() : null;
 
+    console.log("Giver:", giverPlayer, "Receiver:", receiverPlayer); // Log player names
+
     if (!giverPlayer || !receiverPlayer) {
         console.error("Failed to extract player names from trade message");
         return;
     }
 
+    // Extract all resource icons in the trade message
     const resourceIcons = Array.from(messageElement.querySelectorAll("img.lobby-chat-text-icon"));
+    console.log("Resource icons:", resourceIcons); // Log resource icons for debugging
+
+    // Separate given and received resources based on text structure
     const givenResources = extractResourcesFromIcons(resourceIcons.slice(0, Math.floor(resourceIcons.length / 2)));
     const receivedResources = extractResourcesFromIcons(resourceIcons.slice(Math.floor(resourceIcons.length / 2)));
 
-    updatePlayerResources(giverPlayer, negateResources(givenResources));
-    updatePlayerResources(giverPlayer, receivedResources);
-    updatePlayerResources(receiverPlayer, negateResources(receivedResources));
-    updatePlayerResources(receiverPlayer, givenResources);
+    console.log("Given resources:", givenResources); // Log the resources given
+    console.log("Received resources:", receivedResources); // Log the resources received
+
+    // Update resources for giver and receiver
+    console.log("Resources before update:", JSON.stringify(playerResources)); // Log resources before the update
+
+    updatePlayerResources(giverPlayer, negateResources(givenResources)); // Deduct resources given
+    updatePlayerResources(giverPlayer, receivedResources); // Add resources received
+    updatePlayerResources(receiverPlayer, negateResources(receivedResources)); // Deduct resources received
+    updatePlayerResources(receiverPlayer, givenResources); // Add resources given
+
+    console.log(`Updated resources for ${giverPlayer}:`, playerResources[giverPlayer]); // Log giver's updated resources
+    console.log(`Updated resources for ${receiverPlayer}:`, playerResources[receiverPlayer]); // Log receiver's updated resources
 
     console.log(
         `Trade processed: ${giverPlayer} gave ${JSON.stringify(givenResources)} and got ${JSON.stringify(receivedResources)} from ${receiverPlayer}`
     );
 }
+
 
 // Negate resource counts
 function negateResources(resources) {
