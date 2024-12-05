@@ -83,12 +83,41 @@ function updatePlayerResources(player, resources) {
     renderResourceTable(); // Update the resource table
 }
 
-// Render the resource table
 function renderResourceTable() {
     // Remove existing table if it exists
     const existingTable = document.getElementById("resource-table");
     if (existingTable) {
         existingTable.remove();
+    }
+
+    // Create a new table
+    const table = document.createElement("table");
+    table.id = "resource-table"; // This ID matches the CSS styling
+
+    // Create header row
+    const headerRow = table.insertRow();
+    const headerPlayer = headerRow.insertCell();
+    headerPlayer.innerText = "Player";
+    Object.keys(resourceTypes).forEach((resource) => {
+        const cell = headerRow.insertCell();
+        cell.innerText = resource.charAt(0).toUpperCase() + resource.slice(1);
+    });
+
+    // Create rows for each player
+    Object.keys(playerResources).forEach((player) => {
+        const row = table.insertRow();
+        const playerNameCell = row.insertCell();
+        playerNameCell.innerText = player;
+        Object.keys(resourceTypes).forEach((resource) => {
+            const cell = row.insertCell();
+            cell.innerText = playerResources[player][resource] || 0;
+        });
+    });
+
+    // Append the table to the document body
+    document.body.appendChild(table);
+}
+
     }
 
     // Create a new table
