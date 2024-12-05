@@ -17,10 +17,10 @@
         "https://colonist.io/*"
     ],
     "content_scripts": [
-        {
-            "matches": ["https://colonist.io/*"],
-            "css": ["styles.css"],
-            "js": ["explorer.js"]
-        }
-    ]
+    {
+        "matches": ["https://colonist.io/*"],
+        "css": ["styles.css"],
+        "js": ["explorer.js"]
+    }
+ ]
 }
