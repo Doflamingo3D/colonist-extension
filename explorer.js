@@ -67,13 +67,38 @@ function parseLogMessage(messageElement) {
         const player = extractPlayerName(messageElement);
         const resources = extractResources(messageElement);
         updatePlayerResources(player, resources);
+    } else if (textContent.includes("got") && textContent.includes("gave") && textContent.includes("from")) {
+        handleTrade(messageElement); // Detect and process trades
     } else if (textContent.includes("got")) { // Handle resource gains from dice rolls
         const player = extractPlayerName(messageElement);
         const resources = extractResources(messageElement);
         updatePlayerResources(player, resources);
     }
+}
 
-    // Handle other log types (e.g., trades, builds) as needed
+// Handle trading
+function handleTrade(messageElement) {
+    const textContent = messageElement.textContent.trim();
+    console.log("Handling trade:", textContent);
+
+    // Extract Player A and Player B
+    const [playerAPart, playerBPart] = textContent.split(" and got ");
+    const playerAName = playerAPart.split(" gave ")[0].trim();
+    const playerBName = playerBPart.split(" from ")[1].trim();
+
+    // Extract resources Player A gave and Player B gave
+    const playerAGave = extractResourcesFromText(playerAPart.split(" gave ")[1]);
+    const playerBGave = extractResourcesFromText(playerBPart.split(" from ")[0]);
+
+    // Update Player A's resources
+    updatePlayerResources(playerAName, negateResources(playerAGave)); // Deduct resources given by Player A
+    updatePlayerResources(playerAName, playerBGave); // Add resources given by Player B
+
+    // Update Player B's resources
+    updatePlayerResources(playerBName, negateResources(playerBGave)); // Deduct resources given by Player B
+    updatePlayerResources(playerBName, playerAGave); // Add resources given by Player A
+
+    console.log(`Trade processed: ${playerAName} gave ${JSON.stringify(playerAGave)} and got ${JSON.stringify(playerBGave)} from ${playerBName}`);
 }
 
 // Extract player name from message
@@ -94,6 +119,29 @@ function extractResources(messageElement) {
         });
     });
     return resources;
+}
+
+// Extract resources from text
+function extractResourcesFromText(resourceText) {
+    const resources = {};
+    const resourceParts = resourceText.split(", ");
+    resourceParts.forEach((part) => {
+        const [count, resource] = part.split(" ");
+        const resourceKey = Object.keys(resourceTypes).find((key) => resource.includes(key));
+        if (resourceKey) {
+            resources[resourceKey] = parseInt(count);
+        }
+    });
+    return resources;
+}
+
+// Negate resource counts
+function negateResources(resources) {
+    const negated = {};
+    Object.keys(resources).forEach((key) => {
+        negated[key] = -resources[key];
+    });
+    return negated;
 }
 
 // Update resource data for a player
