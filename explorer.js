@@ -177,9 +177,6 @@ function makeTableDraggable(table) {
     });
 }
 
-    document.body.appendChild(table); // Add table to the page
-}
-
 // Initialize the extension
 function init() {
     console.log("Initializing Colonassist...");
