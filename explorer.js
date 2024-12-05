@@ -87,8 +87,10 @@ function parseLogMessage(messageElement) {
         const player = extractPlayerName(messageElement);
         const resources = extractResourcesFromIcons(messageElement.querySelectorAll("img"));
         updatePlayerResources(player, resources);
-    } else if (textContent.includes("gave") && textContent.includes("and got") && textContent.includes("from")) {
-        handleTrade(messageElement);
+    } // Handle trading
+    else if (textContent.includes("gave") && textContent.includes("and got") && textContent.includes("from")) {
+        console.log("Trade detected:", textContent); // Debug log
+        handleTrade(messageElement); // Process trade messages
     }
 }
 
