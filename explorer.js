@@ -62,7 +62,14 @@ function parseLogMessage(messageElement) {
     const textContent = messageElement.textContent.trim();
     console.log("Parsing message:", textContent);
 
-    // Extract resource gain messages
+    // Handle starting resources
+    if (textContent.includes("received starting resources")) {
+        const player = extractPlayerName(messageElement);
+        const resources = extractResources(messageElement);
+        updatePlayerResources(player, resources);
+    }
+
+    // Handle resource gains from dice rolls
     if (textContent.includes("got")) {
         const player = extractPlayerName(messageElement);
         const resources = extractResources(messageElement);
