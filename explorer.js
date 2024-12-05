@@ -12,6 +12,7 @@ const resourceTypes = {
 };
 
 // Initialize MutationObserver for game log
+// Step 1: Observe game log and start tracking players and resources
 function observeGameLog() {
     const logElement = document.querySelector("#game-log-text");
     if (!logElement) {
@@ -21,6 +22,9 @@ function observeGameLog() {
     }
 
     console.log("Game log found. Setting up observer...");
+
+    // Initialize all players when the game starts
+    initializePlayers(logElement);
 
     const logObserver = new MutationObserver((mutations) => {
         mutations.forEach((mutation) => {
@@ -33,6 +37,24 @@ function observeGameLog() {
     });
 
     logObserver.observe(logElement, { childList: true });
+}
+
+// Step 2: Initialize all players from the start of the game
+function initializePlayers(logElement) {
+    console.log("Initializing players...");
+
+    const playerMessages = Array.from(logElement.querySelectorAll(".message-post"))
+        .filter((message) => message.textContent.includes("placed a")); // Detect placement messages
+
+    playerMessages.forEach((message) => {
+        const playerName = extractPlayerName(message);
+        if (playerName && !playerResources[playerName]) {
+            playerResources[playerName] = { wood: 0, brick: 0, wheat: 0, sheep: 0, stone: 0 };
+        }
+    });
+
+    console.log("Initialized players:", playerResources);
+    renderResourceTable(); // Display the initial table
 }
 
 // Parse a single log message
