@@ -11,7 +11,6 @@ const resourceTypes = {
     stone: "card_ore"
 };
 
-// Initialize MutationObserver for game log
 // Step 1: Observe game log and start tracking players and resources
 function observeGameLog() {
     const logElement = document.querySelector("#game-log-text");
@@ -67,10 +66,7 @@ function parseLogMessage(messageElement) {
         const player = extractPlayerName(messageElement);
         const resources = extractResources(messageElement);
         updatePlayerResources(player, resources);
-    }
-
-    // Handle resource gains from dice rolls
-    if (textContent.includes("got")) {
+    } else if (textContent.includes("got")) { // Handle resource gains from dice rolls
         const player = extractPlayerName(messageElement);
         const resources = extractResources(messageElement);
         updatePlayerResources(player, resources);
