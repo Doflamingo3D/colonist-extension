@@ -26,27 +26,28 @@ function extractResourcesFromIcons(resourceIcons) {
 }
 
 // Step 1: Observe game log and start tracking players and resources
+let hasLoggedGameNotFound = false;
+
 function observeGameLog() {
     const logElement = document.querySelector("#game-log-text");
     if (!logElement) {
-        console.error("Game log element not found. Retrying...");
+        if (!hasLoggedGameNotFound) {
+            console.error("Game log element not found. Retrying...");
+            hasLoggedGameNotFound = true; // Set to true to prevent repeating
+        }
         setTimeout(observeGameLog, 1000); // Retry after 1 second
         return;
     }
-
     console.log("Game log found. Setting up observer...");
+    hasLoggedGameNotFound = false; // Reset the flag when the game is found
     initializePlayers(logElement);
-
     const logObserver = new MutationObserver((mutations) => {
         mutations.forEach((mutation) => {
             mutation.addedNodes.forEach((node) => {
-                if (node.nodeType === Node.ELEMENT_NODE && node.classList.contains("message-post")) {
-                    parseLogMessage(node);
-                }
+                parseLogMessage(node);
             });
         });
     });
-
     logObserver.observe(logElement, { childList: true });
 }
 
